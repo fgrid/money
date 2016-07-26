@@ -6,17 +6,17 @@ type Currency struct {
 }
 
 var currencies = map[string]*Currency{
-	"AUD": &Currency{code: "AUD", prec: 2},
-	"CAD": &Currency{code: "CAD", prec: 2},
-	"CHF": &Currency{code: "CHF", prec: 2},
-	"CNY": &Currency{code: "CNY", prec: 2},
-	"EUR": &Currency{code: "EUR", prec: 2},
-	"GBP": &Currency{code: "GBP", prec: 2},
-	"HKD": &Currency{code: "HKD", prec: 2},
-	"INR": &Currency{code: "INR", prec: 2},
-	"JPY": &Currency{code: "JPY", prec: 2},
-	"USD": &Currency{code: "USD", prec: 2},
-	"RUB": &Currency{code: "RUB", prec: 2},
+	"AUD": {code: "AUD", prec: 2},
+	"CAD": {code: "CAD", prec: 2},
+	"CHF": {code: "CHF", prec: 2},
+	"CNY": {code: "CNY", prec: 2},
+	"EUR": {code: "EUR", prec: 2},
+	"GBP": {code: "GBP", prec: 2},
+	"HKD": {code: "HKD", prec: 2},
+	"INR": {code: "INR", prec: 2},
+	"JPY": {code: "JPY", prec: 2},
+	"USD": {code: "USD", prec: 2},
+	"RUB": {code: "RUB", prec: 2},
 }
 
 func NewCurrency(code string) *Currency {
