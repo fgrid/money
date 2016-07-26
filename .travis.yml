@@ -1,13 +1,12 @@
 language: go
-
+sudo: false
 go:
         - tip
 
-install:
-        go get golang.org/x/tools/cmd/cover
-        go get github.com/mattn/goveralls
+before_install:
+        - go get golang.org/x/tools/cmd/cover
+        - go get github.com/mattn/goveralls
 
 
 script:
-        go test -v -covermode=count -coverprofile=coverage.out
-        goveralls -coverprofile=coverage.out -service=travis-ci -repotoken HVg8jhGYEOZCZNxC8gflAOMD6u7k8vSxk
+        - goveralls -service=travis-ci
