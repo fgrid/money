@@ -1,9 +1,11 @@
 package money
 
+// AUD creates an australian dollar money object with given value in cents.
 func AUD(cents uint64) *Money {
 	return &Money{cents: cents, cur: currencies["AUD"]}
 }
 
+// CAD creates a canadian dollar money object with given value in cents.
 func CAD(cents uint64) *Money {
 	return &Money{cents: cents, cur: currencies["CAD"]}
 }
@@ -16,6 +18,7 @@ func CNY(分 uint64) *Money {
 	return &Money{cents: 分, cur: currencies["CNY"]}
 }
 
+// EUR creates an Euro money object with given value in cents
 func EUR(cents uint64) *Money {
 	return &Money{cents: cents, cur: currencies["EUR"]}
 }
