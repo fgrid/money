@@ -108,6 +108,63 @@ func TestMoneyPercent(t *testing.T) {
 	}
 }
 
+func TestMoneyRoundingTwoThirds(t *testing.T) {
+	m1 := money.EUR(100).Debit()
+	a := m1.Mul(2).Div(3).String()
+	e := "EUR -0.67"
+
+	if a != e {
+		t.Errorf("unexpected rounding of 2/3 of 100: %q. expected %q", a, e)
+	}
+}
+
+func TestMoneyRoundingUp(t *testing.T) {
+	m := money.EUR(105)
+	a := m.Div(10).String()
+	e := "EUR 0.11"
+	if a != e {
+		t.Errorf("unexpected rounding up of 10.5 cents: %q. expected %q", a, e)
+	}
+
+	m = money.EUR(106)
+	a = m.Div(10).String()
+	e = "EUR 0.11"
+	if a != e {
+		t.Errorf("unexpected rounding up of 10.6 cents: %q. expected %q", a, e)
+	}
+}
+
+func TestMoneyRoundingDown(t *testing.T) {
+	m := money.EUR(104)
+	a := m.Div(10).String()
+	e := "EUR 0.10"
+	if a != e {
+		t.Errorf("unexpected rounding down of 10.4 cents: %q. expected %q", a, e)
+	}
+
+	m = money.EUR(103)
+	a = m.Div(10).String()
+	e = "EUR 0.10"
+	if a != e {
+		t.Errorf("unexpected rounding down of 10.3 cents: %q. expected %q", a, e)
+	}
+	m = money.EUR(100)
+	a = m.Div(10).String()
+	e = "EUR 0.10"
+	if a != e {
+		t.Errorf("unexpected div result of 10.0 cents: %q. expected %q", a, e)
+	}
+}
+
+func TestMoneyRoundAwayFromZero(t *testing.T) {
+	m := money.EUR(105).Debit()
+	a := m.Div(10).String()
+	e := "EUR -0.11"
+	if a != e {
+		t.Errorf("unexpected round up of a debit amount (away from zero): %q. expected %q", a, e)
+	}
+}
+
 func TestMoneyDebit(t *testing.T) {
 	m1 := money.AUD(1)
 	m2 := money.AUD(2)

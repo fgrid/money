@@ -34,6 +34,18 @@ func (m *Money) Debit() *Money {
 	return &Money{cents: m.cents, cur: m.cur, debit: true}
 }
 
+func (m *Money) Div(o uint64) *Money {
+	v := (m.cents * 10) / o
+	q := v / 10
+	r := v % 10
+	if r < 5 {
+		v = q
+	} else {
+		v = q + 1
+	}
+	return &Money{cents: v, cur: m.cur, debit: m.debit}
+}
+
 func (m *Money) Equals(o *Money) bool {
 	return m.cur.Equals(o.cur) &&
 		m.cents == o.cents &&
@@ -41,7 +53,7 @@ func (m *Money) Equals(o *Money) bool {
 }
 
 func (m *Money) Mul(o uint64) *Money {
-	return &Money{cents: m.cents * o, cur: m.cur}
+	return &Money{cents: m.cents * o, cur: m.cur, debit: m.debit}
 }
 
 func (m *Money) Inv() *Money {
@@ -49,7 +61,7 @@ func (m *Money) Inv() *Money {
 }
 
 func (m *Money) Percent(p uint64) *Money {
-	return &Money{cents: (m.cents * p) / 100, cur: m.cur}
+	return m.Mul(p).Div(100)
 }
 
 func (m *Money) String() string {
