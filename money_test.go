@@ -20,17 +20,12 @@ func ExampleMoney_Cents() {
 
 func ExampleMoney_String() {
 	fmt.Println(money.EUR(1))
-	// Output: EUR 0.01
-}
-
-func ExampleMoney_String_second() {
 	fmt.Println(money.EUR(100))
-	// Output: EUR 1.00
-}
-
-func ExampleMoney_String_third() {
 	fmt.Println(money.EUR(100).Debit())
-	// Output: EUR -1.00
+	// Output:
+	// EUR 0.01
+	// EUR 1.00
+	// EUR -1.00
 }
 
 func ExampleMoney_Add() {
@@ -41,14 +36,14 @@ func ExampleMoney_Add() {
 	// Output: EUR 1.01
 }
 
-func ExampleMoney_Add_second() {
+func ExampleMoney_Add_debits() {
 	m1 := money.EUR(1).Debit()
 	m2, _ := m1.Add(m1)
 	fmt.Println(m2)
 	// Output: EUR -0.02
 }
 
-func ExampleMoney_Add_third() {
+func ExampleMoney_Add_failWithDifferentCurrencies() {
 	m1 := money.EUR(1)
 	m2 := money.USD(1)
 	_, err := m1.Add(m2)
