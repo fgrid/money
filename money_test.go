@@ -1,198 +1,140 @@
 package money_test
 
 import (
-	"github.com/fgrid/money"
+	"fmt"
 	"testing"
+
+	"github.com/fgrid/money"
 )
 
-func TestMoneyCents(t *testing.T) {
-	m := money.USD(1)
-
-	a := m.Cents()
-	e := uint64(1)
-
-	if a != e {
-		t.Errorf("unexpected cents value %d. expected %d.", a, e)
-	}
+func ExampleNew() {
+	m := money.New(123, money.NewCurrency("USD"))
+	fmt.Println(m)
+	// Output: USD 1.23
 }
 
-func TestMoneyString(t *testing.T) {
-	m := money.New(100, money.NewCurrency("EUR"))
-
-	a := m.String()
-	e := "EUR 1.00"
-
-	if a != e {
-		t.Errorf("unexpected string representation %q. expected %q.", a, e)
-	}
+func ExampleMoney_Cents() {
+	fmt.Println(money.AUD(1).Cents())
+	// Output: 1
 }
 
-func TestMoneyAdd(t *testing.T) {
+func ExampleMoney_String() {
+	fmt.Println(money.EUR(1))
+	// Output: EUR 0.01
+}
+
+func ExampleMoney_String_second() {
+	fmt.Println(money.EUR(100))
+	// Output: EUR 1.00
+}
+
+func ExampleMoney_String_third() {
+	fmt.Println(money.EUR(100).Debit())
+	// Output: EUR -1.00
+}
+
+func ExampleMoney_Add() {
 	m1 := money.EUR(1)
 	m2 := money.EUR(100)
-
 	m3, _ := m1.Add(m2)
-	a := m3.String()
-	e := "EUR 1.01"
-
-	if a != e {
-		t.Errorf("unexpected sum %q. expected %q.", a, e)
-	}
+	fmt.Println(m3)
+	// Output: EUR 1.01
 }
 
-func TestMoneyAddDebits(t *testing.T) {
+func ExampleMoney_Add_second() {
 	m1 := money.EUR(1).Debit()
-
 	m2, _ := m1.Add(m1)
-	a := m2.String()
-	e := "EUR -0.02"
-
-	if a != e {
-		t.Errorf("unexpected sum of debits %q. expected %q.", a, e)
-	}
+	fmt.Println(m2)
+	// Output: EUR -0.02
 }
 
-func TestMoneySub(t *testing.T) {
-	m1 := money.GBP(100)
-	m2 := money.GBP(1)
+func ExampleMoney_Add_third() {
+	m1 := money.EUR(1)
+	m2 := money.USD(1)
+	_, err := m1.Add(m2)
+	fmt.Println(err.Error())
+	// Output: different currencies not allowed
+}
+
+func ExampleMoney_Sub() {
+	m1 := money.GBP(1)
+	m2 := money.GBP(100)
 
 	m3, _ := m1.Sub(m2)
 	m4, _ := m2.Sub(m1)
 
-	a1 := m3.String()
-	e1 := "GBP 0.99"
-
-	if a1 != e1 {
-		t.Errorf("unexpected difference %q. expected %q.", a1, e1)
-	}
-
-	a2 := m4.String()
-	e2 := "GBP -0.99"
-	if a2 != e2 {
-		t.Errorf("unexpected difference %q. expected %q.", a2, e2)
-	}
+	fmt.Println(m3)
+	fmt.Println(m4)
+	// Output:
+	// GBP -0.99
+	// GBP 0.99
 }
 
-func TestMoneyInv(t *testing.T) {
-	m := money.CHF(1)
-	m1 := m.Inv()
+func ExampleMoney_Inv() {
+	m1 := money.CHF(1)
 	m2 := m1.Inv()
+	m3 := m2.Inv()
 
-	a1 := m1.String()
-	a2 := m2.String()
-	e1 := "CHF -0.01"
-	e2 := "CHF 0.01"
+	fmt.Println(m1)
+	fmt.Println(m2)
+	fmt.Println(m3)
 
-	if a1 != e1 {
-		t.Errorf("unexpected inverse %q. expected %q", a1, e1)
-	}
-	if a2 != e2 {
-		t.Errorf("unexpected inverse %q. expected %q", a2, e2)
-	}
+	// Output:
+	// CHF 0.01
+	// CHF -0.01
+	// CHF 0.01
 }
 
-func TestMoneyMul(t *testing.T) {
+func ExampleMoney_Mul() {
 	m1 := money.JPY(51)
-
 	m2, _ := m1.Mul(3)
-	a := m2.String()
-	e := "JPY 1.53"
 
-	if a != e {
-		t.Errorf("unexpected product %q. expected %q.", a, e)
-	}
+	fmt.Println(m2)
+	// Output: JPY 1.53
 }
 
-func TestMoneyPercent(t *testing.T) {
+func ExampleMoney_Percent() {
 	m1 := money.CNY(100)
-
 	m2, _ := m1.Percent(33)
-	a := m2.String()
-	e := "CNY 0.33"
 
-	if a != e {
-		t.Errorf("unexpected percentage %q. expected %q.", a, e)
-	}
+	fmt.Println(m2)
+	// Output: CNY 0.33
 }
 
-func TestMoneyRoundingTwoThirds(t *testing.T) {
-	m1 := money.EUR(100).Debit()
-	tmp, _ := m1.Mul(2)
-	m2, _ := tmp.Div(3)
+func ExampleMoney_Div() {
+	// rounding up
+	u1, _ := money.EUR(105).Div(10)
+	u2, _ := money.EUR(106).Div(10)
 
-	a := m2.String()
-	e := "EUR -0.67"
-
-	if a != e {
-		t.Errorf("unexpected rounding of 2/3 of 100: %q. expected %q", a, e)
-	}
+	fmt.Println(u1)
+	fmt.Println(u2)
+	// Output:
+	// EUR 0.11
+	// EUR 0.11
 }
 
-func TestMoneyRoundingUp(t *testing.T) {
-	m1 := money.EUR(105)
-	m2, _ := m1.Div(10)
-	a := m2.String()
-	e := "EUR 0.11"
-	if a != e {
-		t.Errorf("unexpected rounding up of 10.5 cents: %q. expected %q", a, e)
-	}
+func ExampleMoney_Div_second() {
+	// rounding down
+	d1, _ := money.EUR(104).Div(10)
+	d2, _ := money.EUR(100).Div(10)
 
-	m3 := money.EUR(106)
-	m4, _ := m3.Div(10)
-	a = m4.String()
-	e = "EUR 0.11"
-	if a != e {
-		t.Errorf("unexpected rounding up of 10.6 cents: %q. expected %q", a, e)
-	}
+	fmt.Println(d1)
+	fmt.Println(d2)
+	// Output:
+	// EUR 0.10
+	// EUR 0.10
 }
 
-func TestMoneyRoundingDown(t *testing.T) {
-	m1 := money.EUR(104)
-	m2, _ := m1.Div(10)
-	a := m2.String()
-	e := "EUR 0.10"
-	if a != e {
-		t.Errorf("unexpected rounding down of 10.4 cents: %q. expected %q", a, e)
-	}
+func ExampleMoney_Div_third() {
+	// rounding half away from zero
+	d1, _ := money.EUR(105).Debit().Div(10)
+	u2, _ := money.EUR(105).Div(10)
 
-	m3 := money.EUR(103)
-	m4, _ := m3.Div(10)
-	a = m4.String()
-	e = "EUR 0.10"
-	if a != e {
-		t.Errorf("unexpected rounding down of 10.3 cents: %q. expected %q", a, e)
-	}
-
-	m5 := money.EUR(100)
-	m6, _ := m5.Div(10)
-	a = m6.String()
-	e = "EUR 0.10"
-	if a != e {
-		t.Errorf("unexpected div result of 10.0 cents: %q. expected %q", a, e)
-	}
-}
-
-func TestMoneyRoundAwayFromZero(t *testing.T) {
-	m1 := money.EUR(105).Debit()
-	m2, _ := m1.Div(10)
-	a := m2.String()
-	e := "EUR -0.11"
-	if a != e {
-		t.Errorf("unexpected round up of a debit amount (away from zero): %q. expected %q", a, e)
-	}
-}
-
-func TestMoneyDebit(t *testing.T) {
-	m1 := money.AUD(1)
-	m2 := money.AUD(2)
-
-	m3, _ := m1.Sub(m2)
-	a := m3.String()
-	e := "AUD -0.01"
-
-	if a != e {
-		t.Errorf("unexpected difference %q. expected %q.", a, e)
-	}
+	fmt.Println(d1)
+	fmt.Println(u2)
+	// Output:
+	// EUR -0.11
+	// EUR 0.11
 }
 
 func TestMoneyEquals(t *testing.T) {
