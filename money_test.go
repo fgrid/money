@@ -101,7 +101,7 @@ func ExampleMoney_Percent() {
 	// Output: CNY 0.33
 }
 
-func ExampleMoney_Div_rounding_up() {
+func ExampleMoney_Div_roundingUp() {
 	u1, _ := money.EUR(105).Div(10)
 	u2, _ := money.EUR(106).Div(10)
 
@@ -112,7 +112,7 @@ func ExampleMoney_Div_rounding_up() {
 	// EUR 0.11
 }
 
-func ExampleMoney_Div_rounding_down() {
+func ExampleMoney_Div_roundingDown() {
 	d1, _ := money.EUR(104).Div(10)
 	d2, _ := money.EUR(100).Div(10)
 
@@ -123,7 +123,7 @@ func ExampleMoney_Div_rounding_down() {
 	// EUR 0.10
 }
 
-func ExampleMoney_Div_rounding_half_away_from_zero() {
+func ExampleMoney_Div_roundingHalfAwayFromZero() {
 	d1, _ := money.EUR(105).Debit().Div(10)
 	u2, _ := money.EUR(105).Div(10)
 
