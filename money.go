@@ -4,12 +4,12 @@ import "fmt"
 
 type Money struct {
 	cur   *Currency
-	cents uint64
+	subs  uint64
 	debit bool
 }
 
-func New(cents uint64, cur *Currency) *Money {
-	return &Money{cents: cents, cur: cur}
+func New(subs uint64, cur *Currency) *Money {
+	return &Money{subs: subs, cur: cur}
 }
 
 func (m *Money) Add(o *Money) (*Money, error) {
@@ -20,27 +20,46 @@ func (m *Money) Add(o *Money) (*Money, error) {
 		return nil, ErrDiffCurrencies
 	}
 	if m.debit == o.debit {
-		return &Money{cents: m.cents + o.cents, cur: m.cur, debit: m.debit}, nil
+		return &Money{subs: m.subs + o.subs, cur: m.cur, debit: m.debit}, nil
 	}
-	if m.cents > o.cents {
-		return &Money{cents: m.cents - o.cents, cur: m.cur, debit: m.debit}, nil
+	if m.subs > o.subs {
+		return &Money{subs: m.subs - o.subs, cur: m.cur, debit: m.debit}, nil
 	}
-	return &Money{cents: o.cents - m.cents, cur: m.cur, debit: o.debit}, nil
+	return &Money{subs: o.subs - m.subs, cur: m.cur, debit: o.debit}, nil
+}
+
+func (m *Money) Subs() uint64 {
+	if m == nil {
+		return uint64(0)
+	}
+	return m.subs
 }
 
 func (m *Money) Cents() uint64 {
 	if m == nil {
 		return uint64(0)
 	}
-	return m.cents
+	r := m.subs
+	d := int(m.cur.prec) - 2
+	if d > 0 {
+		for i := 0; i < d; i++ {
+			r = r / 10
+		}
+	}
+	if d < 0 {
+		for i := 0; i > d; i-- {
+			r = r * 10
+		}
+	}
+	return r
 }
 
 func (m *Money) Credit() *Money {
-	return &Money{cents: m.cents, cur: m.cur, debit: false}
+	return &Money{subs: m.subs, cur: m.cur, debit: false}
 }
 
 func (m *Money) Debit() *Money {
-	return &Money{cents: m.cents, cur: m.cur, debit: true}
+	return &Money{subs: m.subs, cur: m.cur, debit: true}
 }
 
 func (m *Money) IsDebit() bool {
@@ -51,7 +70,7 @@ func (m *Money) Div(o uint64) (*Money, error) {
 	if o == 0 {
 		return nil, ErrDivZero
 	}
-	v := (m.cents * 10) / o
+	v := (m.subs * 10) / o
 	q := v / 10
 	r := v % 10
 	if r < 5 {
@@ -59,7 +78,7 @@ func (m *Money) Div(o uint64) (*Money, error) {
 	} else {
 		v = q + 1
 	}
-	return &Money{cents: v, cur: m.cur, debit: m.debit}, nil
+	return &Money{subs: v, cur: m.cur, debit: m.debit}, nil
 }
 
 func (m *Money) Equals(o *Money) bool {
@@ -70,16 +89,16 @@ func (m *Money) Equals(o *Money) bool {
 		return false
 	}
 	return m.cur.Equals(o.cur) &&
-		m.cents == o.cents &&
-		(m.debit == o.debit || m.cents == 0)
+		m.subs == o.subs &&
+		(m.debit == o.debit || m.subs == 0)
 }
 
 func (m *Money) Mul(o uint64) (*Money, error) {
-	return &Money{cents: m.cents * o, cur: m.cur, debit: m.debit}, nil
+	return &Money{subs: m.subs * o, cur: m.cur, debit: m.debit}, nil
 }
 
 func (m *Money) Inv() *Money {
-	return &Money{cents: m.cents, cur: m.cur, debit: !m.debit}
+	return &Money{subs: m.subs, cur: m.cur, debit: !m.debit}
 }
 
 func (m *Money) Percent(p uint64) (*Money, error) {
@@ -91,14 +110,21 @@ func (m *Money) Percent(p uint64) (*Money, error) {
 }
 
 func (m *Money) String() string {
-	div := uint64(100)
-	q := m.cents / div
-	r := m.cents % div
+	div := uint64(1)
+	for i := uint(0); i < m.cur.prec; i++ {
+		div = div * 10
+	}
+	q := m.subs / div
+	r := m.subs % div
 	s := ""
-	if m.debit && m.cents != 0 {
+	if m.debit && m.subs != 0 {
 		s = "-"
 	}
-	return fmt.Sprintf("%[1]s %[2]s%[3]d.%0[4]*[5]d", m.cur.code, s, q, m.cur.prec, r)
+	result := fmt.Sprintf("%[1]s %[2]s%[3]d", m.cur.code, s, q)
+	if m.cur.prec > 0 {
+		result += fmt.Sprintf(".%0[1]*[2]d", m.cur.prec, r)
+	}
+	return result
 }
 
 func (m *Money) Sub(o *Money) (*Money, error) {

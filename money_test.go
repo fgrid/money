@@ -13,9 +13,36 @@ func ExampleNew() {
 	// Output: USD 1.23
 }
 
+func ExampleMoney_Subs() {
+	fmt.Println(money.EUR(1).Subs())
+	// Output: 1
+}
+
+func ExampleMoney_Subs_nil() {
+	var m *money.Money
+	fmt.Println(m.Subs())
+	// Output: 0
+}
+
 func ExampleMoney_Cents() {
 	fmt.Println(money.AUD(1).Cents())
-	// Output: 1
+	// Output:
+	// 1
+}
+
+func ExampleMoney_Cents_noSubunits() {
+	fmt.Println(money.New(1, money.NewCurrency("PYG")).Cents())
+	// Output: 100
+}
+
+func ExampleMoney_Cents_finerSubunits() {
+	TND := money.NewCurrency("TND")
+
+	fmt.Println(money.New(1, TND).Cents())
+	fmt.Println(money.New(1000, TND).Cents())
+	// Output:
+	// 0
+	// 100
 }
 
 func ExampleMoney_String() {
@@ -26,6 +53,18 @@ func ExampleMoney_String() {
 	// EUR 0.01
 	// EUR 1.00
 	// EUR -1.00
+}
+
+func ExampleMoney_String_subunits() {
+	fmt.Println(money.New(123, money.NewCurrency("PYG")))
+	fmt.Println(money.New(123, money.NewCurrency("MRO")))
+	fmt.Println(money.New(123, money.NewCurrency("ILS")))
+	fmt.Println(money.New(123, money.NewCurrency("TND")))
+	// Output:
+	// PYG 123
+	// MRO 12.3
+	// ILS 1.23
+	// TND 0.123
 }
 
 func ExampleMoney_Add() {
