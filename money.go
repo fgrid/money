@@ -28,7 +28,7 @@ func (m *Money) Add(o *Money) (*Money, error) {
 	return &Money{subs: o.subs - m.subs, cur: m.cur, debit: o.debit}, nil
 }
 
-func (m *Money) Subs() uint64 {
+func (m *Money) Subunits() uint64 {
 	if m == nil {
 		return uint64(0)
 	}

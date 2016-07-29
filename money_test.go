@@ -13,14 +13,14 @@ func ExampleNew() {
 	// Output: USD 1.23
 }
 
-func ExampleMoney_Subs() {
-	fmt.Println(money.EUR(1).Subs())
+func ExampleMoney_Subunits() {
+	fmt.Println(money.EUR(1).Subunits())
 	// Output: 1
 }
 
-func ExampleMoney_Subs_nil() {
+func ExampleMoney_Subunits_nil() {
 	var m *money.Money
-	fmt.Println(m.Subs())
+	fmt.Println(m.Subunits())
 	// Output: 0
 }
 
