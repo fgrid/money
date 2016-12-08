@@ -87,7 +87,7 @@ func ExampleMoney_Add_failWithDifferentCurrencies() {
 	m2 := money.USD(1)
 	_, err := m1.Add(m2)
 	fmt.Println(err.Error())
-	// Output: different currencies not allowed
+	// Output: money: different currencies not allowed
 }
 
 func ExampleMoney_Sub() {
@@ -166,6 +166,22 @@ func ExampleMoney_Div_roundingHalfAwayFromZero() {
 	// Output:
 	// EUR -0.11
 	// EUR 0.11
+}
+
+func ExampleMoney_Value() {
+	m1 := money.New(100, money.NewCurrency("USD"))
+	m2 := money.New(1, money.NewCurrency("USD"))
+	fmt.Println(m1.Value())
+	fmt.Println(m2.Value())
+	// Output:
+	// 1.00
+	// 0.01
+}
+
+func ExampleMoney_CurrencyCode() {
+	m := money.New(123, money.NewCurrency("USD"))
+	fmt.Println(m.CurrencyCode())
+	// Output: USD
 }
 
 func TestMoneyEquals(t *testing.T) {
@@ -310,5 +326,56 @@ func TestMoneyIsDebit(t *testing.T) {
 	m1 = m1.Debit()
 	if !m1.IsDebit() {
 		t.Errorf("credit should be debit")
+	}
+}
+
+func TestMoneyParseOK(t *testing.T) {
+	if m, err := money.Parse("1", "EUR"); err != nil {
+		t.Errorf("failed money.Parse: %s", err.Error())
+	} else if m.Cents() != 100 {
+		t.Errorf("money parsed wrong: %s", m.String())
+	} else {
+		t.Logf("money: %s", m.String())
+	}
+
+	if m, err := money.Parse("1.20", "EUR"); err != nil {
+		t.Errorf("failed money.Parse: %s", err.Error())
+	} else if m.Cents() != 120 {
+		t.Errorf("money parsed wrong: %s", m.String())
+	} else {
+		t.Logf("money: %s", m.String())
+	}
+
+	if m, err := money.Parse("1.23", "EUR"); err != nil {
+		t.Errorf("failed money.Parse: %s", err.Error())
+	} else if m.Cents() != 123 {
+		t.Errorf("money parsed wrong: %s", m.String())
+	} else {
+		t.Logf("money: %s", m.String())
+	}
+
+	if m, err := money.Parse("1.234", "EUR"); err != nil {
+		t.Errorf("failed money.Parse: %s", err.Error())
+	} else if m.Cents() != 123 {
+		t.Errorf("money parsed wrong: %s", m.String())
+	} else {
+		t.Logf("money: %s", m.String())
+	}
+
+	if m, err := money.Parse("1.239", "EUR"); err != nil {
+		t.Errorf("failed money.Parse: %s", err.Error())
+	} else if m.Cents() != 124 {
+		t.Errorf("money parsed wrong: %s", m.String())
+	} else {
+		t.Logf("money: %s", m.String())
+	}
+}
+
+func TestMoneyParseErr(t *testing.T) {
+	if _, err := money.Parse("1", "XXX"); err != money.ErrUnknownCurrency {
+		t.Errorf("failed money.Parse with wrong error: %s", err.Error())
+	}
+	if _, err := money.Parse("", "USD"); err != money.ErrInvalidSyntax {
+		t.Errorf("failed money.Parse with wrong error: %s", err.Error())
 	}
 }

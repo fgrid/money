@@ -1,6 +1,10 @@
 package money
 
-import "fmt"
+import (
+	"fmt"
+	"math/big"
+	"strconv"
+)
 
 type Money struct {
 	cur   *Currency
@@ -10,6 +14,25 @@ type Money struct {
 
 func New(subs uint64, cur *Currency) *Money {
 	return &Money{subs: subs, cur: cur}
+}
+
+func Parse(value, cur string) (*Money, error) {
+	c := NewCurrency(cur)
+	if c == nil {
+		return nil, ErrUnknownCurrency
+	}
+	r := new(big.Rat)
+	if _, err := fmt.Sscan(value, r); err != nil {
+		return nil, ErrInvalidSyntax
+	}
+	div := int64(1)
+	for i := uint(0); i < c.prec; i++ {
+		div = div * 10
+	}
+	r = r.Mul(r, new(big.Rat).SetFrac64(div, 1))
+	s := r.FloatString(0)
+	subs, _ := strconv.ParseUint(s, 10, 64)
+	return &Money{subs: subs, cur: c}, nil
 }
 
 func (m *Money) Add(o *Money) (*Money, error) {
@@ -110,21 +133,11 @@ func (m *Money) Percent(p uint64) (*Money, error) {
 }
 
 func (m *Money) String() string {
-	div := uint64(1)
-	for i := uint(0); i < m.cur.prec; i++ {
-		div = div * 10
-	}
-	q := m.subs / div
-	r := m.subs % div
 	s := ""
 	if m.debit && m.subs != 0 {
 		s = "-"
 	}
-	result := fmt.Sprintf("%[1]s %[2]s%[3]d", m.cur.code, s, q)
-	if m.cur.prec > 0 {
-		result += fmt.Sprintf(".%0[1]*[2]d", m.cur.prec, r)
-	}
-	return result
+	return fmt.Sprintf("%s %s%s", m.CurrencyCode(), s, m.Value())
 }
 
 func (m *Money) Sub(o *Money) (*Money, error) {
@@ -132,4 +145,24 @@ func (m *Money) Sub(o *Money) (*Money, error) {
 		return nil, ErrMissingParam
 	}
 	return m.Add(o.Inv())
+}
+
+// Value returns the absolute amount in readable form
+func (m *Money) Value() string {
+	div := uint64(1)
+	for i := uint(0); i < m.cur.prec; i++ {
+		div = div * 10
+	}
+	q := m.subs / div
+	r := m.subs % div
+	result := fmt.Sprintf("%d", q)
+	if m.cur.prec > 0 {
+		result += fmt.Sprintf(".%0[1]*[2]d", m.cur.prec, r)
+	}
+	return result
+}
+
+// CurrencyCode returns the currency code
+func (m *Money) CurrencyCode() string {
+	return m.cur.code
 }
