@@ -330,44 +330,62 @@ func TestMoneyIsDebit(t *testing.T) {
 }
 
 func TestMoneyParseOK(t *testing.T) {
-	if m, err := money.Parse("1", "EUR"); err != nil {
+	m, err := money.Parse("1", "EUR")
+	if err != nil {
 		t.Errorf("failed money.Parse: %s", err.Error())
-	} else if m.Cents() != 100 {
-		t.Errorf("money parsed wrong: %s", m.String())
-	} else {
-		t.Logf("money: %s", m.String())
+		return
 	}
-
-	if m, err := money.Parse("1.20", "EUR"); err != nil {
-		t.Errorf("failed money.Parse: %s", err.Error())
-	} else if m.Cents() != 120 {
+	if m.Cents() != 100 {
 		t.Errorf("money parsed wrong: %s", m.String())
-	} else {
-		t.Logf("money: %s", m.String())
+		return
 	}
+}
 
-	if m, err := money.Parse("1.23", "EUR"); err != nil {
+func TestMoneyParseOK_with_fractions(t *testing.T) {
+	m, err := money.Parse("1.20", "EUR")
+	if err != nil {
 		t.Errorf("failed money.Parse: %s", err.Error())
-	} else if m.Cents() != 123 {
-		t.Errorf("money parsed wrong: %s", m.String())
-	} else {
-		t.Logf("money: %s", m.String())
+		return
 	}
-
-	if m, err := money.Parse("1.234", "EUR"); err != nil {
-		t.Errorf("failed money.Parse: %s", err.Error())
-	} else if m.Cents() != 123 {
+	if m.Cents() != 120 {
 		t.Errorf("money parsed wrong: %s", m.String())
-	} else {
-		t.Logf("money: %s", m.String())
+		return
 	}
+}
 
-	if m, err := money.Parse("1.239", "EUR"); err != nil {
+func TestMoneyParseOK_with_cents(t *testing.T) {
+	m, err := money.Parse("1.23", "EUR")
+	if err != nil {
 		t.Errorf("failed money.Parse: %s", err.Error())
-	} else if m.Cents() != 124 {
+		return
+	}
+	if m.Cents() != 123 {
 		t.Errorf("money parsed wrong: %s", m.String())
-	} else {
-		t.Logf("money: %s", m.String())
+		return
+	}
+}
+
+func TestMoneyParseOK_rounding_down(t *testing.T) {
+	m, err := money.Parse("1.234", "EUR")
+	if err != nil {
+		t.Errorf("failed money.Parse: %s", err.Error())
+		return
+	}
+	if m.Cents() != 123 {
+		t.Errorf("money parsed wrong: %s", m.String())
+		return
+	}
+}
+
+func TestMoneyParseOK_rounding_up(t *testing.T) {
+	m, err := money.Parse("1.239", "EUR")
+	if err != nil {
+		t.Errorf("failed money.Parse: %s", err.Error())
+		return
+	}
+	if m.Cents() != 124 {
+		t.Errorf("money parsed wrong: %s", m.String())
+		return
 	}
 }
 
@@ -377,5 +395,74 @@ func TestMoneyParseErr(t *testing.T) {
 	}
 	if _, err := money.Parse("", "USD"); err != money.ErrInvalidSyntax {
 		t.Errorf("failed money.Parse with wrong error: %s", err.Error())
+	}
+}
+
+func TestMoneyLT(t *testing.T) {
+	for _, example := range []struct {
+		a, b     *money.Money
+		expected bool
+	}{
+		{money.EUR(100), money.EUR(101), true},
+		{money.EUR(100), money.EUR(100), false},
+		{money.EUR(100), money.EUR(50), false},
+		{money.EUR(100), money.EUR(50).Debit(), false},
+		{money.EUR(100), money.EUR(100).Debit(), false},
+		{money.EUR(100), money.EUR(101).Debit(), false},
+		{money.EUR(100).Debit(), money.EUR(101).Debit(), false},
+		{money.EUR(100).Debit(), money.EUR(100).Debit(), false},
+		{money.EUR(100).Debit(), money.EUR(50).Debit(), true},
+		{money.EUR(100).Debit(), money.EUR(50), true},
+		{money.EUR(100).Debit(), money.EUR(100), true},
+		{money.EUR(100).Debit(), money.EUR(101), true},
+	} {
+		actual, _ := example.a.LT(example.b)
+		if actual != example.expected {
+			t.Errorf("%s LT %s considered %t - expected %t", example.a, example.b, actual, example.expected)
+		}
+	}
+}
+
+func TestMoneyLT_fail(t *testing.T) {
+	if _, err := money.EUR(100).LT(money.USD(100)); err != money.ErrDiffCurrencies {
+		t.Errorf("LT with different error %q on different currencies", err)
+	}
+	var empty *money.Money
+	if _, err := money.EUR(100).LT(empty); err != money.ErrMissingParam {
+		t.Errorf("LT with different error %q on missing operand")
+	}
+	if _, err := empty.LT(money.EUR(100)); err != money.ErrMissingParam {
+		t.Errorf("LT with different error %q on missing operand")
+	}
+}
+
+func TestMoneyLE(t *testing.T) {
+	if le, _ := money.EUR(100).LE(money.EUR(100)); !le {
+		t.Errorf("equal value not considered less or equal")
+	}
+}
+
+func TestMoneyGT(t *testing.T) {
+	if gt, _ := money.EUR(100).GT(money.EUR(100)); gt {
+		t.Errorf("equal value considered GT")
+	}
+}
+
+func TestMoneyGT_fail(t *testing.T) {
+	if _, err := money.EUR(100).GT(money.USD(100)); err != money.ErrDiffCurrencies {
+		t.Errorf("GT with different error %q on different currencies", err)
+	}
+	var empty *money.Money
+	if _, err := money.EUR(100).GT(empty); err != money.ErrMissingParam {
+		t.Errorf("GT with different error %q on missing operand")
+	}
+	if _, err := empty.GT(money.EUR(100)); err != money.ErrMissingParam {
+		t.Errorf("GT with diferrent error %q on missing operant")
+	}
+}
+
+func TestMoneyGE(t *testing.T) {
+	if ge, _ := money.EUR(100).GE(money.EUR(100)); !ge {
+		t.Errorf("equal value not considered greater or equal")
 	}
 }

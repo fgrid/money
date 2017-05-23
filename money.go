@@ -166,3 +166,43 @@ func (m *Money) Value() string {
 func (m *Money) CurrencyCode() string {
 	return m.cur.code
 }
+
+// GT greater than - returns true if the money is greater than the given parameter value
+func (m *Money) GT(o *Money) (bool, error) {
+	if m == nil || o == nil {
+		return false, ErrMissingParam
+	}
+	if m.CurrencyCode() != o.CurrencyCode() {
+		return false, ErrDiffCurrencies
+	}
+	if m.debit {
+		return o.debit && m.subs < o.subs, nil
+	}
+	return o.debit || m.subs > o.subs, nil
+}
+
+// LE less or equal - returns true if the money is less or equal to the given parameter value
+func (m *Money) LE(o *Money) (bool, error) {
+	result, err := m.GT(o)
+	return !result, err
+}
+
+// LT less than - returns true if the money is less than the given parameter value
+func (m *Money) LT(o *Money) (bool, error) {
+	if m == nil || o == nil {
+		return false, ErrMissingParam
+	}
+	if m.CurrencyCode() != o.CurrencyCode() {
+		return false, ErrDiffCurrencies
+	}
+	if m.debit {
+		return !o.debit || m.subs > o.subs, nil
+	}
+	return !o.debit && m.subs < o.subs, nil
+}
+
+// GE greater or equal - returns tru if the money is greater or equal to the given parameter value
+func (m *Money) GE(o *Money) (bool, error) {
+	result, err := m.LT(o)
+	return !result, err
+}
