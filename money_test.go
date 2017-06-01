@@ -466,3 +466,29 @@ func TestMoneyGE(t *testing.T) {
 		t.Errorf("equal value not considered greater or equal")
 	}
 }
+
+func TestMoneyParseString(t *testing.T) {
+	m0 := money.USD(100).Debit()
+	m1, err := money.ParseString(m0.String())
+	if err != nil {
+		t.Errorf("could not parse money from string representation: %s", err.Error())
+		return
+	}
+	if m1 == nil {
+		t.Errorf("could not parse money from string representation")
+		return
+	}
+	if !m0.Equals(m1) {
+		t.Errorf("parse string made unequal copy: m0=%s, m1=%s", m0.String(), m1.String())
+		return
+	}
+}
+
+func TestMoneyParseStringFail(t *testing.T) {
+	m, err := money.ParseString("EUR - 1.00")
+	if err == nil {
+		t.Errorf("parse string with invalid delimiter did not fail: %s", m.String())
+	} else {
+		t.Logf("parse string with invalid delimiter failed as expected: %s", err.Error())
+	}
+}

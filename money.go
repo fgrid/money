@@ -1,10 +1,6 @@
 package money
 
-import (
-	"fmt"
-	"math/big"
-	"strconv"
-)
+import "fmt"
 
 type Money struct {
 	cur   *Currency
@@ -14,25 +10,6 @@ type Money struct {
 
 func New(subs uint64, cur *Currency) *Money {
 	return &Money{subs: subs, cur: cur}
-}
-
-func Parse(value, cur string) (*Money, error) {
-	c := NewCurrency(cur)
-	if c == nil {
-		return nil, ErrUnknownCurrency
-	}
-	r := new(big.Rat)
-	if _, err := fmt.Sscan(value, r); err != nil {
-		return nil, ErrInvalidSyntax
-	}
-	div := int64(1)
-	for i := uint(0); i < c.prec; i++ {
-		div = div * 10
-	}
-	r = r.Mul(r, new(big.Rat).SetFrac64(div, 1))
-	s := r.FloatString(0)
-	subs, _ := strconv.ParseUint(s, 10, 64)
-	return &Money{subs: subs, cur: c}, nil
 }
 
 func (m *Money) Add(o *Money) (*Money, error) {
