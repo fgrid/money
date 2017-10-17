@@ -97,6 +97,18 @@ func (m *Money) Mul(o uint64) (*Money, error) {
 	return &Money{subs: m.subs * o, cur: m.cur, debit: m.debit}, nil
 }
 
+// MulFloat64 multiplies the amount with the given float64
+func (m *Money) MulFloat64(f float64) *Money {
+	var newDebit bool
+	if f < 0 {
+		newDebit = !m.debit
+		f *= -1
+	} else {
+		newDebit = m.debit
+	}
+	return &Money{subs: uint64(float64(m.subs) * f), cur: m.cur, debit: newDebit}
+}
+
 func (m *Money) Inv() *Money {
 	return &Money{subs: m.subs, cur: m.cur, debit: !m.debit}
 }

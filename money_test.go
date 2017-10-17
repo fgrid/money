@@ -127,6 +127,30 @@ func ExampleMoney_Mul() {
 	// Output: JPY 1.53
 }
 
+func ExampleMoney_MulFloat64() {
+	m1 := money.EUR(100)
+	m2 := m1.MulFloat64(float64(-0.33))
+
+	fmt.Println(m2)
+	// Output: EUR -0.33
+}
+
+func ExampleMoney_MulFloat64_debit() {
+	m1 := money.EUR(100).Debit()
+	m2 := m1.MulFloat64(float64(-0.33))
+
+	fmt.Println(m2)
+	// Output: EUR 0.33
+}
+
+func ExampleMoney_MulFloat64_zero() {
+	m1 := money.EUR(100).Debit()
+	m2 := m1.MulFloat64(float64(0))
+
+	fmt.Println(m2)
+	// Output: EUR 0.00
+}
+
 func ExampleMoney_Percent() {
 	m1 := money.CNY(100)
 	m2, _ := m1.Percent(33)
@@ -429,10 +453,10 @@ func TestMoneyLT_fail(t *testing.T) {
 	}
 	var empty *money.Money
 	if _, err := money.EUR(100).LT(empty); err != money.ErrMissingParam {
-		t.Errorf("LT with different error %q on missing operand")
+		t.Errorf("LT with different error %q on missing operand", err)
 	}
 	if _, err := empty.LT(money.EUR(100)); err != money.ErrMissingParam {
-		t.Errorf("LT with different error %q on missing operand")
+		t.Errorf("LT with different error %q on missing operand", err)
 	}
 }
 
@@ -454,10 +478,10 @@ func TestMoneyGT_fail(t *testing.T) {
 	}
 	var empty *money.Money
 	if _, err := money.EUR(100).GT(empty); err != money.ErrMissingParam {
-		t.Errorf("GT with different error %q on missing operand")
+		t.Errorf("GT with different error %q on missing operand", err)
 	}
 	if _, err := empty.GT(money.EUR(100)); err != money.ErrMissingParam {
-		t.Errorf("GT with diferrent error %q on missing operant")
+		t.Errorf("GT with diferrent error %q on missing operant", err)
 	}
 }
 
