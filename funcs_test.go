@@ -2,6 +2,7 @@ package money_test
 
 import (
 	"fmt"
+
 	"github.com/fgrid/money"
 )
 
@@ -49,4 +50,29 @@ func ExampleMax_fail() {
 		fmt.Printf("max(%s, %s) = %s\n", m1, m2, err.Error())
 	}
 	// Output: max(USD 2.00, EUR 2.01) = money: different currencies not allowed
+}
+
+func ExampleSum() {
+	m0 := money.CHF(100).Debit()
+	m1 := money.CHF(200)
+	m2 := money.CHF(50)
+
+	sum, _ := money.Sum(m0, m1, m2)
+	fmt.Printf("sum(%s, %s, %s) = %s\n", m0, m1, m2, sum)
+	// Output: sum(CHF -1.00, CHF 2.00, CHF 0.50) = CHF 1.50
+}
+
+func ExampleSum_fail() {
+	m0 := money.EUR(100)
+	m1 := money.USD(100)
+
+	_, err := money.Sum(m0, m1)
+	fmt.Printf("sum(%s, %s) = %s\n", m0, m1, err.Error())
+	// Output: sum(EUR 1.00, USD 1.00) = money: different currencies not allowed
+}
+
+func ExampleSum_missingOps() {
+	_, err := money.Sum()
+	fmt.Printf("sum() = %s\n", err.Error())
+	// Output: sum() = money: missing parameter
 }
